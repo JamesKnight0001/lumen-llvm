@@ -1,3 +1,12 @@
+> **This is the Lumen-tuned LLVM fork.** It is `llvm/llvm-project` at the tag in
+> [`lumen/LLVM_VERSION`](lumen/LLVM_VERSION) (llvmorg-21.1.6) plus two small
+> patches on the `lumen` branch - a `gc "lumen"` strategy and the `lumen`
+> triple vendor - that let `lumenc` emit IR LLVM lowers correctly. Build and
+> bundle tooling lives in [`lumen/`](lumen/). Everything below is upstream
+> LLVM's own README.
+
+---
+
 # The LLVM Compiler Infrastructure
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/llvm/llvm-project/badge)](https://securityscorecards.dev/viewer/?uri=github.com/llvm/llvm-project)

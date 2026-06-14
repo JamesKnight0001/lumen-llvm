@@ -1,0 +1,50 @@
+diff --git a/llvm/lib/IR/BuiltinGCs.cpp b/llvm/lib/IR/BuiltinGCs.cpp
+index 163b0383e..78aec9155 100644
+--- a/llvm/lib/IR/BuiltinGCs.cpp
++++ b/llvm/lib/IR/BuiltinGCs.cpp
+@@ -114,6 +114,36 @@ public:
+   }
+ };
+ 
++/// GC strategy for the Lumen language runtime.
++///
++/// Lumen (https://github.com/JamesKnight0001/Lumen) is a small Python-like
++/// language whose runtime uses a NON-MOVING, generational mark/sweep collector
++/// that finds roots by scanning the native stack. A naive optimizing backend
++/// keeps live heap pointers in registers across calls, where that scan cannot
++/// see them, which leads to use-after-free at -O2+. To stay correct, every live
++/// Lumen value that crosses a potential collection must sit in a stack slot.
++///
++/// Lumen's frontend already coallocates roots on the stack (it hoists every live
++/// LumenVal into an entry-block alloca and reloads across calls), so this
++/// strategy does NOT need LLVM's metadata/stackmap machinery. It is therefore
++/// deliberately minimal: NO statepoints (the collector never moves objects, so
++/// relocation would be wasted) and NO metadata tables (which would require a
++/// GCMetadataPrinter). It marks calls as safepoints so the backend keeps the
++/// frame in a scannable state, and otherwise stays out of the way - giving Lumen
++/// a registered, recognized `gc "lumen"` that lowers cleanly at any opt level.
++///
++/// Values travel NaN-boxed in addrspace(0) i64 words.
++class LumenGC : public GCStrategy {
++public:
++  LumenGC() {
++    // No statepoints (non-moving collector), no metadata tables (no printer
++    // needed). Calls are safepoints so live roots stay frame-resident.
++    UseStatepoints = false;
++    NeededSafePoints = true;
++    UsesMetadata = false;
++  }
++};
++
+ } // end anonymous namespace
+ 
+ // Register all the above so that they can be found at runtime.  Note that
+@@ -127,6 +157,8 @@ static GCRegistry::Add<ShadowStackGC>
+ static GCRegistry::Add<StatepointGC> D("statepoint-example",
+                                        "an example strategy for statepoint");
+ static GCRegistry::Add<CoreCLRGC> E("coreclr", "CoreCLR-compatible GC");
++static GCRegistry::Add<LumenGC>
++    F("lumen", "Lumen runtime GC: precise shadow-stack roots, non-moving");
+ 
+ // Provide hook to ensure the containing library is fully loaded.
+ void llvm::linkAllBuiltinGCs() {}

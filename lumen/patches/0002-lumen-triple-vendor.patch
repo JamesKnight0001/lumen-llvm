@@ -1,0 +1,35 @@
+diff --git a/llvm/include/llvm/TargetParser/Triple.h b/llvm/include/llvm/TargetParser/Triple.h
+index 657f42303..b313ac502 100644
+--- a/llvm/include/llvm/TargetParser/Triple.h
++++ b/llvm/include/llvm/TargetParser/Triple.h
+@@ -197,7 +197,8 @@ public:
+     SUSE,
+     OpenEmbedded,
+     Intel,
+-    LastVendorType = Intel
++    Lumen,
++    LastVendorType = Lumen
+   };
+   enum OSType {
+     UnknownOS,
+diff --git a/llvm/lib/TargetParser/Triple.cpp b/llvm/lib/TargetParser/Triple.cpp
+index 0584c941d..8c538ae3e 100644
+--- a/llvm/lib/TargetParser/Triple.cpp
++++ b/llvm/lib/TargetParser/Triple.cpp
+@@ -264,6 +264,8 @@ StringRef Triple::getVendorTypeName(VendorType Kind) {
+   case ImaginationTechnologies: return "img";
+   case Intel:
+     return "intel";
++  case Lumen:
++    return "lumen";
+   case Mesa: return "mesa";
+   case MipsTechnologies: return "mti";
+   case NVIDIA: return "nvidia";
+@@ -669,6 +671,7 @@ static Triple::VendorType parseVendor(StringRef VendorName) {
+       .Case("suse", Triple::SUSE)
+       .Case("oe", Triple::OpenEmbedded)
+       .Case("intel", Triple::Intel)
++      .Case("lumen", Triple::Lumen)
+       .Default(Triple::UnknownVendor);
+ }
+ 
