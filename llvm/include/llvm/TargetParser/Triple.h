@@ -197,7 +197,8 @@ public:
     SUSE,
     OpenEmbedded,
     Intel,
-    LastVendorType = Intel
+    Lumen,
+    LastVendorType = Lumen
   };
   enum OSType {
     UnknownOS,
