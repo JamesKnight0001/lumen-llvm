@@ -3,8 +3,9 @@
 # Slim on purpose - we do not build the full LLVM tool/test surface.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+[ -d llvm-project ] || { echo "run scripts/fetch.sh first"; exit 1; }
 
-cmake -S llvm -B build -G Ninja \
+cmake -S llvm-project/llvm -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_PROJECTS="clang;lld" \
   -DLLVM_TARGETS_TO_BUILD="X86" \
@@ -14,11 +15,15 @@ cmake -S llvm -B build -G Ninja \
 
 # build the binaries Lumen drives. llc also exercises the Lumen GC strategy +
 # triple patches, so it doubles as the patch-validation target.
-ninja -C build llc clang lld
-echo "built: build/bin/{llc,clang,lld}"
+ninja -C build llc clang lld llvm-ar
+echo "built: build/bin/{llc,clang,lld,llvm-ar}"
 
 # smoke-test the Lumen-specific patches lowered cleanly
 if [ -f tests/lumen_gc_triple.ll ]; then
   echo "verifying gc \"lumen\" + lumen triple..."
   build/bin/llc tests/lumen_gc_triple.ll -o - | head -5
+fi
+if [ -f tests/lumen_systems_driver.ll ]; then
+  echo "verifying fastcc i48 + volatile MMIO + port I/O asm under gc \"lumen\"..."
+  build/bin/llc tests/lumen_systems_driver.ll -o - | head -12
 fi
